@@ -3,11 +3,14 @@ import {
     mkdir, ls, cat, rm, put, getPartitionLocations, readPartition,
     PATH, UPLOAD_FILENAME, PARTITION, FIREBASE, MYSQL, MONGDB, FILENAME_LIST
 } from "../../constants/CommandConstants";
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import  "../../css/style.css"
 import {BuildUrl} from "../../Util/UrlUtil";
+import {createTheme, List, ListItem, ListItemText, ThemeProvider} from "@mui/material";
+import MaterialTable from "material-table";
 
 export function Command(){
+    const defaultProvider = createTheme()
 
     const commandArguments = {
         [mkdir] : {[PATH]: true},
@@ -19,6 +22,13 @@ export function Command(){
         [readPartition]: {[PATH]: true, [PARTITION]: true},
     }
 
+    const [columns, setColumns] = useState([])
+    const [tableData, setTableData] = useState([])
+    const [listData, setListData] = useState([])
+
+    const [locations, setLocations] = useState([])
+
+
     const [edfs, setEdfs] = useState(FIREBASE)
 
     const [command, setCommand] = useState(mkdir);
@@ -29,6 +39,8 @@ export function Command(){
 
     const [partition, setPartition] = useState("");
 
+
+
     let params = {
         "database": edfs,
         "path": path,
@@ -36,19 +48,61 @@ export function Command(){
         "partition": partition,
     }
 
-    const executeCommand = () => {
-        var validQuery = Object.fromEntries(Object.entries(params).filter(([key]) => commandArguments[command][key]))
-
-        console.log(validQuery)
-
+    const getURL = () => {
+        const validQuery = Object.fromEntries(Object.entries(params).filter(([key]) => commandArguments[command][key]));
         const fetchURL = BuildUrl(command, edfs, validQuery)
-        console.log(fetchURL)
-
-        fetch(fetchURL)
-            .then((response) => response.json())
-            .then(it => console.log(it))
+        return fetchURL
     }
 
+
+
+    const execute = () => {
+        setTableData([])
+        setListData([])
+        if (command === ls) {executeLs()}
+        else if (command === cat || command === readPartition) {executeCat()}
+        else if (command === getPartitionLocations) {executeGetLocations()}
+        else executeLs()
+    }
+
+    const executeLs = () => {
+        const fetchURL = getURL()
+        fetch(fetchURL)
+            .then((response) => response.json())
+            .then(it =>
+            {
+                console.log(it)
+                setListData(it.map(it => it.id))
+            })
+    }
+
+    const executeCat = () => {
+        const catURL = getURL()
+        fetch(catURL)
+            .then((response) => {
+                return response.json()}
+               )
+            .then(it => {
+                console.log(it)
+                setColumns(it.columns)
+                setTableData(it.data)
+            })
+    }
+
+    const executeGetLocations = () => {
+        const getLocatoinURL = getURL()
+        fetch(getLocatoinURL)
+            .then(response => response.json())
+            .then(
+                it => {
+                    if (it.success) {
+                        setListData(it.locations)
+                    } else {
+                        setListData([])
+                    }
+                }
+            )
+    }
     return (
         <Container fluid="xl">
             <Row>
@@ -94,8 +148,6 @@ export function Command(){
                     </Col>
                 }
 
-
-
                 {
                     commandArguments[command][UPLOAD_FILENAME] &&
                     <Col>
@@ -125,8 +177,35 @@ export function Command(){
 
             </Row>
             <Row style={{marginTop: 20, padding: 10}}>
-                <Button variant={"primary"} type={"submit"} size={"lg"} onClick={() => {executeCommand()}}>Execute</Button>
+                <Button variant={"primary"} type={"submit"} size={"lg"} onClick={() => {execute()}}>Execute</Button>
             </Row>
+            {
+                tableData && tableData.length > 0 &&
+                <Row>
+                    <div>
+                        <ThemeProvider theme={defaultProvider}>
+                            <MaterialTable title={"data"} columns={columns} data={tableData ? tableData.filter(it => it !== null) : []}/>
+                        </ThemeProvider>
+                    </div>
+                </Row>
+            }
+            {
+                listData && listData.length > 0 &&
+                <Row>
+                    <div>
+                        <List>
+                            {listData.map(it => (
+                                <ListItem key={it}>
+                                    <ListItemText primary={it}/>
+                                </ListItem>
+                            ))}
+                        </List>
+                    </div>
+                </Row>
+            }
+
         </Container>
     )
 }
+
+
