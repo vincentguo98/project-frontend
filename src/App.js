@@ -15,7 +15,15 @@ function App() {
     const [currFolder, setCurrFolder] = useState([{id: "/", name: "/"}])
     const [edfs, setEdfs] = useState(FIREBASE)
 
+    // const addThumbnail = (file) => {
+    //     return file.map(it => (
+    //         {...it, ...(it.isDir ? {thumbnailUrl: } : {})}
+    //     ))
+    //
+    // }
+
     const setCurrFiles = (file, targetFolder) => {
+        console.log(file)
         if (targetFolder === "/") {
             setFiles(file)
         } else {

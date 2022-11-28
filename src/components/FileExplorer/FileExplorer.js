@@ -3,20 +3,20 @@ import {
     FileBrowser,
     FileList,
     FileNavbar,
-    FileToolbar,
+    ChonkyIconName,
     setChonkyDefaults
 } from "chonky";
+import { ChonkyIconFA } from 'chonky-icon-fontawesome';
 import {useEffect, useState} from "react";
 import {Container, Form, Row} from "react-bootstrap";
 import {FIREBASE, ls, MYSQL} from "../../constants/CommandConstants";
-import {BuildUrl} from "../../Util/UrlUtil";
-import MaterialTable from "material-table";
-import {ThemeProvider, createTheme} from "@mui/material";
+import {createTheme} from "@mui/material";
 
 
 setChonkyDefaults({
     disableDragAndDrop: true
 })
+setChonkyDefaults({iconComponent: ChonkyIconFA})
 
 export function FileExplorer({files,
                                  setFiles,
@@ -34,11 +34,6 @@ export function FileExplorer({files,
         if (currFolder.length <= 1) return "/"
         return currFolder.map(it => it.id).join("/").substring(1)
     }
-
-
-
-
-
 
     useEffect(() => {
         lsAndDisplay(edfs, folder2string(currFolder))
@@ -62,11 +57,6 @@ export function FileExplorer({files,
         }
     }
 
-
-
-
-
-
     return (
         <>
             <Container>
@@ -86,9 +76,8 @@ export function FileExplorer({files,
                 </Row>
 
                 <div style={{ height: 300 }}>
-                    <FileBrowser files={files} disableDefaultFileActions={true} onFileAction={handleAction} folderChain={currFolder}>
+                    <FileBrowser files={files} onFileAction={handleAction} folderChain={currFolder}>
                         <FileNavbar />
-                        <FileToolbar />
                         <FileList/>
                     </FileBrowser>
                 </div>

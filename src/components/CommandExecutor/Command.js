@@ -1,4 +1,4 @@
-import {Container, Form, Button, Row, Col} from "react-bootstrap";
+import {Container, Form, Button, Row, Col, Spinner, Alert} from "react-bootstrap";
 import {
     mkdir, ls, cat, rm, put, getPartitionLocations, readPartition,
     PATH, UPLOAD_FILENAME, PARTITION, FIREBASE, MYSQL, FILENAME_LIST
@@ -31,8 +31,8 @@ export function Command({fileExploreEdfs, currFolder, lsAndDisplay}){
     const [columns, setColumns] = useState([])
     const [tableData, setTableData] = useState([])
     const [listData, setListData] = useState([])
-
-    const [locations, setLocations] = useState([])
+    const [info, setInfo] = useState(false)
+    const [success, setSuccess] = useState(false)
 
 
     const [edfs, setEdfs] = useState(FIREBASE)
@@ -44,6 +44,8 @@ export function Command({fileExploreEdfs, currFolder, lsAndDisplay}){
     const [uploadFilename, setUploadFilename] = useState(FILENAME_LIST[0]);
 
     const [partition, setPartition] = useState("");
+
+    const [loading, setLoading] = useState(false)
 
     let params = {
         "database": edfs,
@@ -59,7 +61,9 @@ export function Command({fileExploreEdfs, currFolder, lsAndDisplay}){
     }
 
     const execute = () => {
+        setLoading(true)
         setTableData([])
+        setInfo(false)
         setListData([])
         if (command === ls) {executeLs()}
         else if (command === cat || command === readPartition) {executeCat()}
@@ -72,6 +76,10 @@ export function Command({fileExploreEdfs, currFolder, lsAndDisplay}){
         fetch(url)
             .then(response => response.json())
             .then(it => {
+                if (it.success) setSuccess(true)
+                else setSuccess(false)
+                setInfo(true)
+                setLoading(false)
                 lsAndDisplay(fileExploreEdfs, folder2string(currFolder))
             })
     }
@@ -83,6 +91,7 @@ export function Command({fileExploreEdfs, currFolder, lsAndDisplay}){
             .then(it =>
             {
                 console.log(it)
+                setLoading(false)
                 setListData(it.map(it => it.id))
             })
     }
@@ -95,6 +104,7 @@ export function Command({fileExploreEdfs, currFolder, lsAndDisplay}){
                )
             .then(it => {
                 console.log(it)
+                setLoading(false)
                 setColumns(it.columns)
                 setTableData(it.data)
             })
@@ -106,6 +116,7 @@ export function Command({fileExploreEdfs, currFolder, lsAndDisplay}){
             .then(response => response.json())
             .then(
                 it => {
+                    setLoading(false)
                     if (it.success) {
                         setListData(it.locations)
                     } else {
@@ -115,106 +126,125 @@ export function Command({fileExploreEdfs, currFolder, lsAndDisplay}){
             )
     }
     return (
-        <Container fluid="xl">
-            <Row>
-                <Col xs={2}>
-                    <Form.Group>
-                        <Form.Label>EDFS Type</Form.Label>
-                        <Form.Select value={edfs}
-                                     onChange={(e) => {setEdfs(e.target.value)}
-                                     }>
-                            <option value={FIREBASE}>{FIREBASE}</option>
-                            <option value={MYSQL}>{MYSQL}</option>
-                        </Form.Select>
-                    </Form.Group>
-                </Col>
 
-                <Col xs={2}>
-                    <Form.Group>
-                        <Form.Label>Command</Form.Label>
-                        <Form.Select value={command}
-                                     onChange={(e) => {setCommand(e.target.value)}
-                        }>
-                            <option value={mkdir} >mkdir</option>
-                            <option value={ls}>ls</option>
-                            <option value={cat}>cat</option>
-                            <option value={rm}>rm</option>
-                            <option value={put} >put</option>
-                            <option value={getPartitionLocations}>getPartitionLocations</option>
-                            <option value={readPartition}>readPartition</option>
-                        </Form.Select>
-                    </Form.Group>
-                </Col>
-
-                {
-                    commandArguments[command][PATH] &&
-                    <Col>
+        <>
+            <Container fluid="xl" style={{marginTop: 20}}>
+                <Row>
+                    <Col xs={2}>
                         <Form.Group>
-                            <Form.Label>{PATH}</Form.Label>
-                            <Form.Control value={path}
-                                          onChange={(e) => setPath(e.target.value)}
-                            />
-                        </Form.Group>
-                    </Col>
-                }
-
-                {
-                    commandArguments[command][UPLOAD_FILENAME] &&
-                    <Col>
-                        <Form.Group>
-                            <Form.Label>{UPLOAD_FILENAME}</Form.Label>
-                            <Form.Select value={uploadFilename}
-                                         onChange={(e) => {setUploadFilename(e.target.value)}
+                            <Form.Label>EDFS Type</Form.Label>
+                            <Form.Select value={edfs}
+                                         onChange={(e) => {setEdfs(e.target.value)}
                                          }>
-                                {FILENAME_LIST.map(filename => (
-                                    <option value={filename}>{filename}</option>
-                                ))}
+                                <option value={FIREBASE}>{FIREBASE}</option>
+                                <option value={MYSQL}>{MYSQL}</option>
                             </Form.Select>
                         </Form.Group>
                     </Col>
-                }
 
-                {
-                    commandArguments[command][PARTITION] &&
-                    <Col>
+                    <Col xs={2}>
                         <Form.Group>
-                            <Form.Label>{PARTITION}</Form.Label>
-                            <Form.Control value={partition}
-                                          onChange={(e) => setPartition(e.target.value)}/>
+                            <Form.Label>Command</Form.Label>
+                            <Form.Select value={command}
+                                         onChange={(e) => {setCommand(e.target.value)}
+                                         }>
+                                <option value={mkdir} >mkdir</option>
+                                <option value={ls}>ls</option>
+                                <option value={cat}>cat</option>
+                                <option value={rm}>rm</option>
+                                <option value={put} >put</option>
+                                <option value={getPartitionLocations}>getPartitionLocations</option>
+                                <option value={readPartition}>readPartition</option>
+                            </Form.Select>
                         </Form.Group>
                     </Col>
+
+                    {
+                        commandArguments[command][PATH] &&
+                        <Col>
+                            <Form.Group>
+                                <Form.Label>{PATH}</Form.Label>
+                                <Form.Control value={path}
+                                              onChange={(e) => setPath(e.target.value)}
+                                />
+                            </Form.Group>
+                        </Col>
+                    }
+
+                    {
+                        commandArguments[command][UPLOAD_FILENAME] &&
+                        <Col>
+                            <Form.Group>
+                                <Form.Label>{UPLOAD_FILENAME}</Form.Label>
+                                <Form.Select value={uploadFilename}
+                                             onChange={(e) => {setUploadFilename(e.target.value)}
+                                             }>
+                                    {FILENAME_LIST.map(filename => (
+                                        <option value={filename}>{filename}</option>
+                                    ))}
+                                </Form.Select>
+                            </Form.Group>
+                        </Col>
+                    }
+
+                    {
+                        commandArguments[command][PARTITION] &&
+                        <Col>
+                            <Form.Group>
+                                <Form.Label>{PARTITION}</Form.Label>
+                                <Form.Control value={partition}
+                                              onChange={(e) => setPartition(e.target.value)}/>
+                            </Form.Group>
+                        </Col>
+                    }
+                </Row>
+                <Row style={{marginTop: 20, padding: 10}}>
+                    <Button variant={"primary"} type={"submit"} size={"lg"} onClick={() => {execute()}}>Execute</Button>
+                </Row>
+            </Container>
+
+            <Container>
+                {
+                    loading &&
+                    <Col>
+                        <Spinner animation={"border"} role={"status"}/>
+                    </Col>
                 }
+                {
+                    info &&
+                    <Alert variant={success ? "success" : "danger"}>
+                        <Alert.Heading>
+                            {success ? "Execution Success":  "Execution Failed"}
+                        </Alert.Heading>
+                    </Alert>
+                }
+                {
+                    tableData && tableData.length > 0 &&
+                    <Row>
+                        <div>
+                            <ThemeProvider theme={defaultProvider}>
+                                <MaterialTable title={"data"} columns={columns} data={tableData ? tableData.filter(it => it !== null) : []}/>
+                            </ThemeProvider>
+                        </div>
+                    </Row>
+                }
+                {
+                    listData && listData.length > 0 &&
+                    <Row>
+                        <div>
+                            <List>
+                                {listData.map(it => (
+                                    <ListItem key={it}>
+                                        <ListItemText primary={it}/>
+                                    </ListItem>
+                                ))}
+                            </List>
+                        </div>
+                    </Row>
+                }
+            </Container>
+        </>
 
-            </Row>
-            <Row style={{marginTop: 20, padding: 10}}>
-                <Button variant={"primary"} type={"submit"} size={"lg"} onClick={() => {execute()}}>Execute</Button>
-            </Row>
-            {
-                tableData && tableData.length > 0 &&
-                <Row>
-                    <div>
-                        <ThemeProvider theme={defaultProvider}>
-                            <MaterialTable title={"data"} columns={columns} data={tableData ? tableData.filter(it => it !== null) : []}/>
-                        </ThemeProvider>
-                    </div>
-                </Row>
-            }
-            {
-                listData && listData.length > 0 &&
-                <Row>
-                    <div>
-                        <List>
-                            {listData.map(it => (
-                                <ListItem key={it}>
-                                    <ListItemText primary={it}/>
-                                </ListItem>
-                            ))}
-                        </List>
-                    </div>
-                </Row>
-            }
-
-        </Container>
     )
 }
 
