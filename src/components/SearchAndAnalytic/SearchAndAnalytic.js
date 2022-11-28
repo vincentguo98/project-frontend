@@ -42,24 +42,24 @@ export function SearchAndAnalytic() {
     }
 
     //"http://localhost:5001/api/search?database=firebase&path=/a/california_vaccination.csv&selectField=Cases&whereField=Cases&lte=1000&gte=200"
-    useEffect(() => {
-
-        fetch("http://localhost:5001/api/search?database=firebase&path=/a/california_vaccination.csv&selectField=Cases&whereField=Cases&lte=1000&gte=200")
-            .then(it => it.json())
-            .then(it => {
-                console.log(it)
-                let reduceArray = []
-                it.partition.forEach(p => {
-                    let temp = p.output.map(i => ({"input": i}))
-                    reduceArray.push(...temp)
-
-                })
-                console.log(reduceArray)
-                setInputForReduce(reduceArray)
-                setPartitionData({partition: it.partition, columns: it.columns, res: it.res})
-            })
-
-    }, [])
+    // useEffect(() => {
+    //
+    //     fetch("http://localhost:5001/api/search?database=firebase&path=/a/california_vaccination.csv&selectField=Cases&whereField=Cases&lte=1000&gte=200")
+    //         .then(it => it.json())
+    //         .then(it => {
+    //             console.log(it)
+    //             let reduceArray = []
+    //             it.partition.forEach(p => {
+    //                 let temp = p.output.map(i => ({"input": i}))
+    //                 reduceArray.push(...temp)
+    //
+    //             })
+    //             console.log(reduceArray)
+    //             setInputForReduce(reduceArray)
+    //             setPartitionData({partition: it.partition, columns: it.columns, res: it.res})
+    //         })
+    //
+    // }, [])
 
     const generateTaskTitle = (index) => {
         if (command === "search") {
@@ -229,7 +229,7 @@ export function SearchAndAnalytic() {
 
 
         <div>
-            <h1>Map Stage</h1>
+            <h3>Map Stage</h3>
             <Row style={{marginTop: 10, border: "10 solid blue"}}>
                 {
                     partitionData && Object.keys(partitionData).length > 0 &&
@@ -249,9 +249,10 @@ export function SearchAndAnalytic() {
         </div>
 
         <div>
-            <h1>Reduce Stage</h1>
+            <h3>Reduce Stage</h3>
             <Col>
                 {
+                   inputForReduce && inputForReduce.length > 0 &&
                     <ProcessUnit inputTableData={inputForReduce}
                                  inputTitle = {"Data from map stage"}
                                  outputTitle={"Data After reduce"}

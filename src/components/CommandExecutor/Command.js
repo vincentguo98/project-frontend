@@ -69,6 +69,7 @@ export function Command({fileExploreEdfs, currFolder, lsAndDisplay}){
         else if (command === cat || command === readPartition) {executeCat()}
         else if (command === getPartitionLocations) {executeGetLocations()}
         else if (command === rm || command === mkdir) {executeMkdiranDRm()}
+        else if (command === put) {executeMkdiranDRm()}
     }
 
     const executeMkdiranDRm = () => {
