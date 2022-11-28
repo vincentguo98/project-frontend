@@ -8,6 +8,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import {useState} from "react";
 import {BuildUrl} from "./Util/UrlUtil";
 import {FIREBASE, ls} from "./constants/CommandConstants";
+import {Divider} from "@mui/material";
 
 
 function App() {
@@ -41,7 +42,10 @@ function App() {
 
     return (
       <Container  fluid="xl" >
+          <div> <h2>Task 1: EDFS Emulation </h2></div>
         <Command fileExploreEdfs={edfs} currFolder={currFolder}  lsAndDisplay={lsAndDisplay}/>
+          <Divider style={{marginTop: 10}}/>
+          <div><h2>Task 2: File Explorer</h2> </div>
         <FileExplorer files={files}
                       setFiles={setFiles}
                       currFolder={currFolder}
@@ -49,6 +53,8 @@ function App() {
                       lsAndDisplay={lsAndDisplay}
                       edfs={edfs}
                       setEdfs={setEdfs}/>
+          <Divider style={{marginTop: 10}}/>
+          <div><h2>Task 3: Search and  Analytic</h2></div>
         <SearchAndAnalytic/>
       </Container>
   );

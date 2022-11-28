@@ -1,7 +1,7 @@
-import {Container} from "@mui/material";
+import {Container} from "react-bootstrap"
 import {ProcessUnit} from "./ProcessUnit/ProcessUnit";
 import {Button, Col, Form, Row} from "react-bootstrap";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {BuildUrl} from "../../Util/UrlUtil";
 
 export function SearchAndAnalytic() {
@@ -27,6 +27,8 @@ export function SearchAndAnalytic() {
 
     const [groupByField, setGroupByField] = useState("")
 
+    const [inputForReduce, setInputForReduce] = useState([])
+
     const filename_whereFields = {
         "california_vaccination.csv": ["Cases", "Case_Rate",	"Deaths", "Death_Rate",	"Percent_of_People_with_1__Dose", "Percent_of_People_Fully_Vaccinated"],
         "LA_County_COVID_Cases.csv": ["cases", "deaths", "people_tested", "state_cases", "state_deaths", "new_cases","new_deaths","new_state_cases", "new_state_deaths"],
@@ -40,6 +42,32 @@ export function SearchAndAnalytic() {
     }
 
     //"http://localhost:5001/api/search?database=firebase&path=/a/california_vaccination.csv&selectField=Cases&whereField=Cases&lte=1000&gte=200"
+    useEffect(() => {
+
+        fetch("http://localhost:5001/api/search?database=firebase&path=/a/california_vaccination.csv&selectField=Cases&whereField=Cases&lte=1000&gte=200")
+            .then(it => it.json())
+            .then(it => {
+                console.log(it)
+                let reduceArray = []
+                it.partition.forEach(p => {
+                    let temp = p.output.map(i => ({"input": i}))
+                    reduceArray.push(...temp)
+
+                })
+                console.log(reduceArray)
+                setInputForReduce(reduceArray)
+                setPartitionData({partition: it.partition, columns: it.columns, res: it.res})
+            })
+
+    }, [])
+
+    const generateTaskTitle = (index) => {
+        if (command === "search") {
+            return `select ${selectField} from ${path}/partition${index} where ${lte} >= ${whereField} >= ${gte}`
+        } else {
+            return `select count(*) from from ${path}/partition${index} where ${lte} >= ${whereField} >= ${gte} group by ${groupByField}`
+        }
+    }
 
     const execute = () => {
         if (command === "search") {
@@ -52,7 +80,16 @@ export function SearchAndAnalytic() {
             })
             fetch(url)
                 .then((it) => it.json())
-                .then(it => setPartitionData({partition: it.partition, columns: it.columns}))
+                .then(it => {
+                    let reduceArray = []
+                    it.partition.forEach(p => {
+                        let temp = p.output.map(i => ({"input": i}))
+                        reduceArray.push(...temp)
+
+                    })
+                    setInputForReduce(reduceArray)
+                    setPartitionData({partition: it.partition, columns: it.columns,  res: it.res})
+                })
         }
 
         if (command === "count") {
@@ -65,12 +102,22 @@ export function SearchAndAnalytic() {
             })
             fetch(url)
                 .then(it => it.json())
-                .then(it => setPartitionData({partition: it.partition, columns: []}))
+                .then(it => {
+                    let reduceArray = []
+                    it.partition.forEach(p => {
+                        let temp = p.output.map(i => ({"input": i}))
+                        reduceArray.push(...temp)
+                    })
+                    setInputForReduce(reduceArray)
+                    setPartitionData({partition: it.partition, columns: it.columns,  res: it.res})
+                })
         }
+
+
     }
 
 
-    return <Container>
+    return <Container fluid={"xl"} style={{marginTop: 20}}>
         <Row>
             <Col>
                 <Form.Group>
@@ -181,19 +228,43 @@ export function SearchAndAnalytic() {
         </Row>
 
 
-        <Row>
-            {
-                partitionData && Object.keys(partitionData).length > 0 &&
-                partitionData.partition.map((it, index) => (
-                    <Col key={index} style={{border: "10px solid red"}}>
-                        <ProcessUnit inputTableData={it.input}
-                                     columns={partitionData.columns}
-                                     taskTitle={"random word"}
-                                     outputListData={it.output}
-                        />
-                    </Col>
-                ))
-            }
-        </Row>
+        <div>
+            <h1>Map Stage</h1>
+            <Row style={{marginTop: 10, border: "10 solid blue"}}>
+                {
+                    partitionData && Object.keys(partitionData).length > 0 &&
+
+                    partitionData.partition.map((it, index) => (
+                        <Col key={index} lg={6}>
+                            <ProcessUnit inputTableData={it.input}
+                                         columns={partitionData.columns}
+                                         taskTitle = { generateTaskTitle(index)}
+                                         outputListData={it.output}
+                                         index={index}
+                            />
+                        </Col>
+                    ))
+                }
+            </Row>
+        </div>
+
+        <div>
+            <h1>Reduce Stage</h1>
+            <Col>
+                {
+                    <ProcessUnit inputTableData={inputForReduce}
+                                 inputTitle = {"Data from map stage"}
+                                 outputTitle={"Data After reduce"}
+                                 columns={[{"title": "Input", "field": "input"}]}
+                                 taskTitle={"reduce"}
+                                 outputListData={partitionData.res && partitionData.res.length > 0 ? partitionData.res : []}
+                                 index={0}/>
+                }
+            </Col>
+
+
+        </div>
+
+
     </Container>
 }

@@ -234,8 +234,10 @@ export function Command({fileExploreEdfs, currFolder, lsAndDisplay}){
                         <div>
                             <List>
                                 {listData.map(it => (
-                                    <ListItem key={it}>
-                                        <ListItemText primary={it}/>
+                                    <ListItem key={it} style={{border: "1px solid grey "}}>
+                                        <div >
+                                            <ListItemText primary={it}/>
+                                        </div>
                                     </ListItem>
                                 ))}
                             </List>
