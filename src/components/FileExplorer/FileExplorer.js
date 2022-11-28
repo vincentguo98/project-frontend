@@ -8,7 +8,7 @@ import {
 } from "chonky";
 import {useEffect, useState} from "react";
 import {Container, Form, Row} from "react-bootstrap";
-import {FIREBASE, ls, MONGDB, MYSQL} from "../../constants/CommandConstants";
+import {FIREBASE, ls, MYSQL} from "../../constants/CommandConstants";
 import {BuildUrl} from "../../Util/UrlUtil";
 import MaterialTable from "material-table";
 import {ThemeProvider, createTheme} from "@mui/material";
@@ -88,7 +88,6 @@ export function FileExplorer() {
                                      }>
                             <option value={FIREBASE}>{FIREBASE}</option>
                             <option value={MYSQL}>{MYSQL}</option>
-                            <option value={MONGDB}>{MONGDB}</option>
                         </Form.Select>
                     </Form.Group>
                 </Row>

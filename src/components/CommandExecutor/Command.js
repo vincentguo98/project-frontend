@@ -1,7 +1,7 @@
 import {Container, Form, Button, Row, Col} from "react-bootstrap";
 import {
     mkdir, ls, cat, rm, put, getPartitionLocations, readPartition,
-    PATH, UPLOAD_FILENAME, PARTITION, FIREBASE, MYSQL, MONGDB, FILENAME_LIST
+    PATH, UPLOAD_FILENAME, PARTITION, FIREBASE, MYSQL, FILENAME_LIST
 } from "../../constants/CommandConstants";
 import {useState} from "react";
 import  "../../css/style.css"
@@ -39,8 +39,6 @@ export function Command(){
 
     const [partition, setPartition] = useState("");
 
-
-
     let params = {
         "database": edfs,
         "path": path,
@@ -54,8 +52,6 @@ export function Command(){
         return fetchURL
     }
 
-
-
     const execute = () => {
         setTableData([])
         setListData([])
@@ -63,6 +59,15 @@ export function Command(){
         else if (command === cat || command === readPartition) {executeCat()}
         else if (command === getPartitionLocations) {executeGetLocations()}
         else executeLs()
+    }
+
+    const executeMkdianRm = () => {
+        const url = getURL()
+        fetch(fetch())
+            .then(response => response.json())
+            .then(it => {
+                console.log(it)
+            })
     }
 
     const executeLs = () => {
@@ -90,8 +95,8 @@ export function Command(){
     }
 
     const executeGetLocations = () => {
-        const getLocatoinURL = getURL()
-        fetch(getLocatoinURL)
+        const getLocationURL = getURL()
+        fetch(getLocationURL)
             .then(response => response.json())
             .then(
                 it => {
@@ -114,7 +119,6 @@ export function Command(){
                                      }>
                             <option value={FIREBASE}>{FIREBASE}</option>
                             <option value={MYSQL}>{MYSQL}</option>
-                            <option value={MONGDB}>{MONGDB}</option>
                         </Form.Select>
                     </Form.Group>
                 </Col>

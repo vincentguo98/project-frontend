@@ -12,9 +12,9 @@ export const PARTITION = "partition"
 
 export const FIREBASE = "firebase"
 export const MYSQL = "mysql"
-export const MONGDB = "mongodb"
 
 export const FILENAME_LIST = [
     "california_vaccination.csv",
-    "LA_County_COVID_Testing.csv"
+    "LA_County_COVID_Testing.csv",
+    "LA_County_COVID_Cases.csv"
 ]
