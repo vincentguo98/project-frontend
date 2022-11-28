@@ -9,7 +9,7 @@ import {BuildUrl} from "../../Util/UrlUtil";
 import {createTheme, List, ListItem, ListItemText, ThemeProvider} from "@mui/material";
 import MaterialTable from "material-table";
 
-export function Command(){
+export function Command({fileExploreEdfs, currFolder, lsAndDisplay}){
     const defaultProvider = createTheme()
 
     const commandArguments = {
@@ -21,6 +21,12 @@ export function Command(){
         [getPartitionLocations]: {[PATH]: true},
         [readPartition]: {[PATH]: true, [PARTITION]: true},
     }
+
+    const folder2string = (currFolder) => {
+        if (currFolder.length <= 1) return "/"
+        return currFolder.map(it => it.id).join("/").substring(1)
+    }
+
 
     const [columns, setColumns] = useState([])
     const [tableData, setTableData] = useState([])
@@ -58,15 +64,15 @@ export function Command(){
         if (command === ls) {executeLs()}
         else if (command === cat || command === readPartition) {executeCat()}
         else if (command === getPartitionLocations) {executeGetLocations()}
-        else executeLs()
+        else if (command === rm || command === mkdir) {executeMkdiranDRm()}
     }
 
-    const executeMkdianRm = () => {
+    const executeMkdiranDRm = () => {
         const url = getURL()
-        fetch(fetch())
+        fetch(url)
             .then(response => response.json())
             .then(it => {
-                console.log(it)
+                lsAndDisplay(fileExploreEdfs, folder2string(currFolder))
             })
     }
 

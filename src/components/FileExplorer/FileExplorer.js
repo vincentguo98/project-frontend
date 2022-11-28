@@ -18,10 +18,15 @@ setChonkyDefaults({
     disableDragAndDrop: true
 })
 
-export function FileExplorer() {
-    const [files, setFiles] = useState([null, null])
-    const [edfs, setEdfs] = useState(FIREBASE)
-    const [currFolder, setCurrFolder] = useState([{id: "/", name: "/"}])
+export function FileExplorer({files,
+                                 setFiles,
+                                 currFolder,
+                                 setCurrFolder,
+                                 lsAndDisplay,
+                                 edfs,
+                                 setEdfs, }) {
+
+
 
     const defaultProvider = createTheme()
 
@@ -31,21 +36,9 @@ export function FileExplorer() {
     }
 
 
-    const setCurrFiles = (file, targetFolder) => {
-        if (targetFolder === "/") {
-            setFiles(file)
-        } else {
-            setFiles([{id: '..', name: "..", isDir: true}, ...file])
-        }
-    }
 
-    const lsAndDisplay = (database, currFolder) => {
-        console.log(currFolder)
-        fetch(BuildUrl(ls, database, {"path": currFolder}))
-            .then(r => r.json())
-            .then(it => setCurrFiles(it, currFolder))
-            .catch()
-    }
+
+
 
     useEffect(() => {
         lsAndDisplay(edfs, folder2string(currFolder))
